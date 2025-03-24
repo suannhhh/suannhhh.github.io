@@ -41,10 +41,17 @@
             
             <div class="form-group">
                 <label>Invite People:</label>
-                <div class="invitee-input-container">
-                    <input type="text" id="inviteeName" placeholder="Name">
-                    <input type="email" id="inviteeEmail" placeholder="Email">
-                    <button onclick="addInvitee()" class="btn btn-sm">Add</button>
+                <div class="invitee-options">
+                    <div class="invitee-input-container">
+                        <input type="text" id="inviteeName" placeholder="Guest Name">
+                        <button onclick="addInvitee()" class="btn btn-sm">Add</button>
+                    </div>
+                    
+                    <div class="guest-upload-container">
+                        <p>Or upload a guest list file:</p>
+                        <input type="file" id="createEventGuestFile" accept=".xlsx, .xls, .csv">
+                        <button onclick="uploadGuestListCreate()" class="btn btn-sm">Upload Guests</button>
+                    </div>
                 </div>
             </div>
             
@@ -67,6 +74,13 @@
             <a href="index.html" class="btn">Back to Home</a>
         </div>
     </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="firebase-config.js"></script>
     <script src="app.js"></script>
 </body>
 </html>

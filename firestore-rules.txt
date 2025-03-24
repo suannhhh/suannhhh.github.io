@@ -1,0 +1,35 @@
+// Firestore security rules
+// Copy these rules to your Firebase Console at: https://console.firebase.google.com/
+// Navigate to: Your project > Firestore Database > Rules
+
+// Basic rules allowing read/write access to authenticated users
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Test mode rules - ONLY USE DURING DEVELOPMENT
+    // These rules allow anyone to read and write to your database
+    match /{document=**} {
+      allow read, write: if true;
+    }
+    
+    // Production rules (commented out for now)
+    // Uncomment these and delete the test rules when you're ready for production
+    /*
+    // Allow access to events
+    match /events/{eventId} {
+      // Allow reading events by anyone
+      allow read: if true;
+      
+      // Allow creating events
+      allow create: if true;
+      
+      // Allow updates only if the user knows the event code (basic security)
+      // In a real app, you'd typically check for authentication
+      allow update: if true;
+      
+      // Prevent deletion for this simple app
+      allow delete: if false;
+    }
+    */
+  }
+}

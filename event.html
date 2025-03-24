@@ -61,6 +61,14 @@
                         <button onclick="exportGuestList()" class="btn btn-sm">Export Guest List</button>
                         <button onclick="toggleDetailedView()" class="btn btn-sm" id="viewToggleBtn">Show Detailed View</button>
                     </div>
+                    
+                    <!-- Guest Upload Section -->
+                    <div class="guest-upload-section">
+                        <h4>Upload Guest List</h4>
+                        <p>Upload an Excel file with a list of guest names (one name per row)</p>
+                        <input type="file" id="guestListFile" accept=".xlsx, .xls, .csv">
+                        <button onclick="uploadGuestList()" class="btn btn-sm">Upload Guests</button>
+                    </div>
                 </div>
                 
                 <div class="detailed-guest-list hidden" id="detailedGuestList">
@@ -69,7 +77,6 @@
                         <thead>
                             <tr>
                                 <th>Name</th>
-                                <th>Email</th>
                                 <th>Status</th>
                                 <th>Response Date</th>
                             </tr>
@@ -87,11 +94,6 @@
                     <div class="form-group">
                         <label for="guestName">Your Name:</label>
                         <input type="text" id="guestName" placeholder="Enter your name">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="guestEmail">Your Email:</label>
-                        <input type="email" id="guestEmail" placeholder="Enter your email">
                     </div>
                     
                     <div class="form-group">
@@ -150,6 +152,12 @@
             </div>
         </div>
     </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="firebase-config.js"></script>
     <script src="app.js"></script>
 </body>
 </html>

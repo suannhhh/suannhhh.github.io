@@ -42,24 +42,21 @@ function goToEvent() {
 // Functions for creating an event
 function addInvitee() {
     const name = document.getElementById('inviteeName').value.trim();
-    const email = document.getElementById('inviteeEmail').value.trim();
     
-    if (name && email) {
+    if (name) {
         // Add to the invitee list
         currentInvitees.push({
             name: name,
-            email: email,
             status: 'pending'
         });
         
-        // Clear the input fields
+        // Clear the input field
         document.getElementById('inviteeName').value = '';
-        document.getElementById('inviteeEmail').value = '';
         
         // Update the UI
         updateInviteesList();
     } else {
-        alert('Please enter both name and email');
+        alert('Please enter a name');
     }
 }
 
@@ -70,7 +67,7 @@ function updateInviteesList() {
     currentInvitees.forEach((invitee, index) => {
         const li = document.createElement('li');
         li.innerHTML = `
-            <span>${invitee.name} (${invitee.email})</span>
+            <span>${invitee.name}</span>
             <button class="btn btn-sm" onclick="removeInvitee(${index})">Remove</button>
         `;
         inviteesList.appendChild(li);
@@ -82,7 +79,7 @@ function removeInvitee(index) {
     updateInviteesList();
 }
 
-function submitEvent() {
+async function submitEvent() {
     const eventName = document.getElementById('eventName').value.trim();
     const eventDate = document.getElementById('eventDate').value;
     const eventTime = document.getElementById('eventTime').value;
@@ -90,27 +87,33 @@ function submitEvent() {
     const eventDescription = document.getElementById('eventDescription').value.trim();
     
     if (eventName && eventDate) {
-        // Create a new event object
-        const newEvent = {
-            id: generateEventCode(),
-            name: eventName,
-            date: eventDate,
-            time: eventTime,
-            location: eventLocation,
-            description: eventDescription,
-            invitees: currentInvitees
-        };
-        
-        // Save the event to localStorage
-        saveEvent(newEvent);
-        
-        // Show success message
-        document.getElementById('eventCode').textContent = newEvent.id;
-        const eventLink = `${window.location.origin}/event.html?code=${newEvent.id}`;
-        document.getElementById('eventLink').value = eventLink;
-        
-        document.querySelector('.event-form').classList.add('hidden');
-        document.getElementById('eventCreatedMessage').classList.remove('hidden');
+        try {
+            // Create a new event object
+            const newEvent = {
+                id: generateEventCode(),
+                name: eventName,
+                date: eventDate,
+                time: eventTime,
+                location: eventLocation,
+                description: eventDescription,
+                invitees: currentInvitees,
+                createdAt: new Date().toISOString()
+            };
+            
+            // Save the event to Firestore
+            await saveEvent(newEvent);
+            
+            // Show success message
+            document.getElementById('eventCode').textContent = newEvent.id;
+            const eventLink = `${window.location.origin}/event.html?code=${newEvent.id}`;
+            document.getElementById('eventLink').value = eventLink;
+            
+            document.querySelector('.event-form').classList.add('hidden');
+            document.getElementById('eventCreatedMessage').classList.remove('hidden');
+        } catch (error) {
+            console.error('Error creating event:', error);
+            alert('Error creating event. Please try again.');
+        }
     } else {
         alert('Please provide at least an event name and date');
     }
@@ -133,31 +136,108 @@ function copyEventLink() {
     alert('Link copied to clipboard!');
 }
 
-// Functions for viewing an event
-function loadEventDetails(eventCode) {
-    // Load the event from localStorage
-    const event = getEvent(eventCode);
+// Add function to handle guest list upload during event creation
+function uploadGuestListCreate() {
+    const fileInput = document.getElementById('createEventGuestFile');
+    const file = fileInput.files[0];
     
-    if (event) {
-        currentEvent = event;
+    if (!file) {
+        alert('Please select a file first.');
+        return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            // Parse the Excel/CSV file
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, {type: 'array'});
+            
+            // Get the first worksheet
+            const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+            
+            // Convert to JSON (array of objects)
+            const jsonData = XLSX.utils.sheet_to_json(worksheet, {header: 1});
+            
+            // Process the guest names (skip header row if exists)
+            const startRow = jsonData[0] && typeof jsonData[0][0] === 'string' && 
+                            (jsonData[0][0].toLowerCase().includes('name') || 
+                             jsonData[0][0].toLowerCase().includes('guest')) ? 1 : 0;
+            
+            let addedGuests = 0;
+            
+            // Add each guest name to the currentInvitees array
+            for (let i = startRow; i < jsonData.length; i++) {
+                if (jsonData[i] && jsonData[i][0] && jsonData[i][0].trim()) {
+                    const guestName = jsonData[i][0].trim();
+                    
+                    // Check if guest already exists in currentInvitees
+                    const existingGuest = currentInvitees.find(inv => 
+                        inv.name.toLowerCase() === guestName.toLowerCase());
+                    
+                    if (!existingGuest) {
+                        // Add new guest
+                        currentInvitees.push({
+                            name: guestName,
+                            status: 'pending'
+                        });
+                        addedGuests++;
+                    }
+                }
+            }
+            
+            // Update the UI
+            if (addedGuests > 0) {
+                updateInviteesList();
+                alert(`Successfully added ${addedGuests} guests to the invitation list.`);
+                fileInput.value = ''; // Clear the file input
+            } else {
+                alert('No new guests were found in the file or all guests already exist in your list.');
+            }
+            
+        } catch (error) {
+            console.error('Error processing file:', error);
+            alert('Error processing the file. Please make sure it\'s a valid Excel or CSV file.');
+        }
+    };
+    
+    reader.onerror = function() {
+        alert('Error reading the file. Please try again.');
+    };
+    
+    reader.readAsArrayBuffer(file);
+}
+
+// Functions for viewing an event
+async function loadEventDetails(eventCode) {
+    try {
+        // Load the event from Firestore
+        const event = await getEvent(eventCode);
         
-        // Update UI with event details
-        document.getElementById('eventNameHeader').textContent = event.name;
-        document.getElementById('eventDate').textContent = formatDate(event.date);
-        document.getElementById('eventTime').textContent = formatTime(event.time);
-        document.getElementById('eventLocation').textContent = event.location;
-        document.getElementById('eventDescription').textContent = event.description;
-        
-        // Load guest list
-        updateGuestList();
-        updateGuestStats();
-        
-        // Check if the user has already RSVP'd
-        checkUserRsvpStatus();
-    } else {
-        // Event not found
-        document.getElementById('eventDetails').classList.add('hidden');
-        document.getElementById('eventNotFound').classList.remove('hidden');
+        if (event) {
+            currentEvent = event;
+            
+            // Update UI with event details
+            document.getElementById('eventNameHeader').textContent = event.name;
+            document.getElementById('eventDate').textContent = formatDate(event.date);
+            document.getElementById('eventTime').textContent = formatTime(event.time);
+            document.getElementById('eventLocation').textContent = event.location;
+            document.getElementById('eventDescription').textContent = event.description;
+            
+            // Load guest list
+            updateGuestList();
+            updateGuestStats();
+            
+            // Check if the user has already RSVP'd
+            checkUserRsvpStatus();
+        } else {
+            // Event not found
+            document.getElementById('eventDetails').classList.add('hidden');
+            document.getElementById('eventNotFound').classList.remove('hidden');
+        }
+    } catch (error) {
+        console.error('Error loading event details:', error);
+        alert('Error loading event details. Please try again.');
     }
 }
 
@@ -267,12 +347,10 @@ function showGuestTab(status) {
 
 function checkUserRsvpStatus() {
     // Check if the user has already responded
-    // This is a simplified version - in a real app, you'd use authentication
-    const guestEmail = localStorage.getItem(`rsvp_${currentEvent.id}_email`);
     const guestName = localStorage.getItem(`rsvp_${currentEvent.id}_name`);
     const guestResponse = localStorage.getItem(`rsvp_${currentEvent.id}_response`);
     
-    if (guestEmail && guestName && guestResponse) {
+    if (guestName && guestResponse) {
         // User has already responded
         document.getElementById('rsvpForm').classList.add('hidden');
         document.getElementById('alreadyResponded').classList.remove('hidden');
@@ -294,7 +372,6 @@ function checkUserRsvpStatus() {
         
         // Pre-fill the form in case they want to change their response
         document.getElementById('guestName').value = guestName;
-        document.getElementById('guestEmail').value = guestEmail;
     }
 }
 
@@ -303,58 +380,60 @@ function showRsvpForm() {
     document.getElementById('rsvpForm').classList.remove('hidden');
 }
 
-function respondToInvitation(response) {
+async function respondToInvitation(response) {
     const guestName = document.getElementById('guestName').value.trim();
-    const guestEmail = document.getElementById('guestEmail').value.trim();
     
-    if (guestName && guestEmail) {
-        // Current timestamp
-        const responseDate = new Date().toISOString();
-        
-        // Save the response
-        localStorage.setItem(`rsvp_${currentEvent.id}_name`, guestName);
-        localStorage.setItem(`rsvp_${currentEvent.id}_email`, guestEmail);
-        localStorage.setItem(`rsvp_${currentEvent.id}_response`, response);
-        localStorage.setItem(`rsvp_${currentEvent.id}_date`, responseDate);
-        
-        // Update the invitee's status in the event
-        let found = false;
-        if (currentEvent && currentEvent.invitees) {
-            for (let i = 0; i < currentEvent.invitees.length; i++) {
-                if (currentEvent.invitees[i].email.toLowerCase() === guestEmail.toLowerCase()) {
-                    currentEvent.invitees[i].status = response;
-                    currentEvent.invitees[i].responseDate = responseDate; // Add response date
-                    found = true;
-                    break;
+    if (guestName) {
+        try {
+            // Current timestamp
+            const responseDate = new Date().toISOString();
+            
+            // Save the response in localStorage for this browser only
+            localStorage.setItem(`rsvp_${currentEvent.id}_name`, guestName);
+            localStorage.setItem(`rsvp_${currentEvent.id}_response`, response);
+            localStorage.setItem(`rsvp_${currentEvent.id}_date`, responseDate);
+            
+            // Update the invitee's status in the event
+            let found = false;
+            if (currentEvent && currentEvent.invitees) {
+                for (let i = 0; i < currentEvent.invitees.length; i++) {
+                    if (currentEvent.invitees[i].name.toLowerCase() === guestName.toLowerCase()) {
+                        currentEvent.invitees[i].status = response;
+                        currentEvent.invitees[i].responseDate = responseDate;
+                        found = true;
+                        break;
+                    }
                 }
+                
+                // If the guest wasn't in the original invitee list, add them
+                if (!found) {
+                    currentEvent.invitees.push({
+                        name: guestName,
+                        status: response,
+                        responseDate: responseDate
+                    });
+                }
+                
+                // Save the updated event to Firestore
+                await saveEvent(currentEvent);
+                
+                // Update the UI
+                updateGuestList();
+                updateGuestStats();
+                if (isHostAuthenticated) {
+                    updateDetailedGuestList();
+                }
+                
+                // Show success message
+                document.getElementById('rsvpForm').classList.add('hidden');
+                document.getElementById('rsvpSuccess').classList.remove('hidden');
             }
-            
-            // If the guest wasn't in the original invitee list, add them
-            if (!found) {
-                currentEvent.invitees.push({
-                    name: guestName,
-                    email: guestEmail,
-                    status: response,
-                    responseDate: responseDate // Add response date
-                });
-            }
-            
-            // Save the updated event
-            saveEvent(currentEvent);
-            
-            // Update the UI
-            updateGuestList();
-            updateGuestStats();
-            if (isHostAuthenticated) {
-                updateDetailedGuestList(); // Update detailed view if host is authenticated
-            }
-            
-            // Show success message
-            document.getElementById('rsvpForm').classList.add('hidden');
-            document.getElementById('rsvpSuccess').classList.remove('hidden');
+        } catch (error) {
+            console.error('Error responding to invitation:', error);
+            alert('Error saving your response. Please try again.');
         }
     } else {
-        alert('Please enter your name and email');
+        alert('Please enter your name');
     }
 }
 
@@ -395,7 +474,6 @@ function updateDetailedGuestList() {
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td>${invitee.name}</td>
-                <td>${invitee.email}</td>
                 <td class="status-${invitee.status || 'pending'}">${statusText}</td>
                 <td>${responseDate}</td>
             `;
@@ -404,7 +482,7 @@ function updateDetailedGuestList() {
     } else {
         // No invitees yet
         const tr = document.createElement('tr');
-        tr.innerHTML = '<td colspan="4" class="empty-message">No guests have been invited yet</td>';
+        tr.innerHTML = '<td colspan="3" class="empty-message">No guests have been invited yet</td>';
         tableBody.appendChild(tr);
     }
 }
@@ -437,7 +515,7 @@ function exportGuestList() {
         return;
     }
     
-    let csvContent = 'Name,Email,Status,Response Date\n';
+    let csvContent = 'Name,Status,Response Date\n';
     
     currentEvent.invitees.forEach(invitee => {
         const status = getStatusText(invitee.status);
@@ -446,7 +524,6 @@ function exportGuestList() {
         // Create CSV row, properly escape values
         const row = [
             `"${invitee.name.replace(/"/g, '""')}"`,
-            `"${invitee.email.replace(/"/g, '""')}"`,
             `"${status}"`,
             `"${responseDate}"`
         ].join(',');
@@ -466,12 +543,116 @@ function exportGuestList() {
     document.body.removeChild(link);
 }
 
-// localStorage functions to persist data
-function saveEvent(event) {
-    localStorage.setItem(`event_${event.id}`, JSON.stringify(event));
+// Add function to handle guest list upload
+async function uploadGuestList() {
+    const fileInput = document.getElementById('guestListFile');
+    const file = fileInput.files[0];
+    
+    if (!file) {
+        alert('Please select a file first.');
+        return;
+    }
+    
+    const reader = new FileReader();
+    reader.onload = async function(e) {
+        try {
+            // Parse the Excel/CSV file
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, {type: 'array'});
+            
+            // Get the first worksheet
+            const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+            
+            // Convert to JSON (array of objects)
+            const jsonData = XLSX.utils.sheet_to_json(worksheet, {header: 1});
+            
+            // Process the guest names (skip header row if exists)
+            const startRow = jsonData[0] && typeof jsonData[0][0] === 'string' && 
+                             (jsonData[0][0].toLowerCase().includes('name') || 
+                              jsonData[0][0].toLowerCase().includes('guest')) ? 1 : 0;
+            
+            let newGuests = 0;
+            
+            // Add each guest name to the event
+            for (let i = startRow; i < jsonData.length; i++) {
+                if (jsonData[i] && jsonData[i][0] && jsonData[i][0].trim()) {
+                    const guestName = jsonData[i][0].trim();
+                    
+                    // Check if guest already exists
+                    const existingGuest = currentEvent.invitees.find(inv => 
+                        inv.name.toLowerCase() === guestName.toLowerCase());
+                    
+                    if (!existingGuest) {
+                        // Add new guest
+                        currentEvent.invitees.push({
+                            name: guestName,
+                            status: 'pending'
+                        });
+                        newGuests++;
+                    }
+                }
+            }
+            
+            // Save updated event and refresh UI
+            if (newGuests > 0) {
+                await saveEvent(currentEvent);
+                updateGuestList();
+                updateGuestStats();
+                updateDetailedGuestList();
+                alert(`Successfully added ${newGuests} new guests to the event.`);
+                fileInput.value = ''; // Clear the file input
+            } else {
+                alert('No new guests were found in the file or all guests already exist.');
+            }
+            
+        } catch (error) {
+            console.error('Error processing file:', error);
+            alert('Error processing the file. Please make sure it\'s a valid Excel or CSV file.');
+        }
+    };
+    
+    reader.onerror = function() {
+        alert('Error reading the file. Please try again.');
+    };
+    
+    reader.readAsArrayBuffer(file);
 }
 
-function getEvent(eventId) {
-    const eventData = localStorage.getItem(`event_${eventId}`);
-    return eventData ? JSON.parse(eventData) : null;
+// Modified localStorage functions to use Firebase instead
+async function saveEvent(event) {
+    try {
+        // Store the event in Firestore
+        await db.collection('events').doc(event.id).set(event);
+        console.log('Event saved to Firestore:', event.id);
+        
+        // Store local RSVP state if user has responded (for this browser only)
+        const guestName = localStorage.getItem(`rsvp_${event.id}_name`);
+        const guestResponse = localStorage.getItem(`rsvp_${event.id}_response`);
+        
+        if (guestName && guestResponse) {
+            localStorage.setItem(`rsvp_${event.id}_name`, guestName);
+            localStorage.setItem(`rsvp_${event.id}_response`, guestResponse);
+        }
+    } catch (error) {
+        console.error('Error saving event:', error);
+        alert('Error saving event data. Please try again.');
+    }
+}
+
+async function getEvent(eventId) {
+    try {
+        // Get the event from Firestore
+        const doc = await db.collection('events').doc(eventId).get();
+        
+        if (doc.exists) {
+            return doc.data();
+        } else {
+            console.log('No event found with ID:', eventId);
+            return null;
+        }
+    } catch (error) {
+        console.error('Error getting event:', error);
+        alert('Error retrieving event data. Please try again.');
+        return null;
+    }
 }
