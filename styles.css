@@ -377,3 +377,53 @@ textarea {
 .hidden {
     display: none;
 }
+
+/* Add these styles to your existing CSS file */
+
+.event-basic-info {
+    background-color: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
+}
+
+.attending-list-section {
+    background-color: white;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 30px;
+}
+
+.attending-list {
+    list-style-type: none;
+}
+
+.attending-list li {
+    padding: 10px 15px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    align-items: center;
+}
+
+.attending-list li::before {
+    content: "✓";
+    margin-right: 10px;
+    color: #2ecc71;
+    font-weight: bold;
+}
+
+.host-login-option {
+    text-align: center;
+    margin: 30px 0;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+
+.host-login-option p {
+    margin-bottom: 10px;
+    color: #6c757d;
+}

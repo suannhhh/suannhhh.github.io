@@ -20,14 +20,24 @@ document.addEventListener('DOMContentLoaded', function() {
         const eventCode = urlParams.get('code');
         
         if (eventCode) {
-            loadEventDetails(eventCode);
+            loadGuestView(eventCode);
         } else {
             // No event code provided, show error
-            document.getElementById('eventDetails').classList.add('hidden');
+            document.getElementById('guestView').classList.add('hidden');
             document.getElementById('eventNotFound').classList.remove('hidden');
         }
     }
 });
+
+// Function to generate a random access code for the host
+function generateRandomCode() {
+    const characters = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Removed similar looking characters
+    let code = '';
+    for (let i = 0; i < 8; i++) {
+        code += characters.charAt(Math.floor(Math.random() * characters.length));
+    }
+    document.getElementById('hostAccessCode').value = code;
+}
 
 // Function to navigate to event page from the home page
 function goToEvent() {
@@ -85,8 +95,14 @@ async function submitEvent() {
     const eventTime = document.getElementById('eventTime').value;
     const eventLocation = document.getElementById('eventLocation').value.trim();
     const eventDescription = document.getElementById('eventDescription').value.trim();
+    const hostAccessCode = document.getElementById('hostAccessCode').value.trim();
     
     if (eventName && eventDate) {
+        if (!hostAccessCode) {
+            alert('Please create a host access code for security purposes.');
+            return;
+        }
+        
         try {
             // Create a new event object
             const newEvent = {
@@ -97,6 +113,7 @@ async function submitEvent() {
                 location: eventLocation,
                 description: eventDescription,
                 invitees: currentInvitees,
+                hostAccessCode: hostAccessCode,
                 createdAt: new Date().toISOString()
             };
             
@@ -105,6 +122,7 @@ async function submitEvent() {
             
             // Show success message
             document.getElementById('eventCode').textContent = newEvent.id;
+            document.getElementById('hostCodeDisplay').textContent = newEvent.hostAccessCode;
             const eventLink = `${window.location.origin}/event.html?code=${newEvent.id}`;
             document.getElementById('eventLink').value = eventLink;
             
@@ -209,34 +227,43 @@ function uploadGuestListCreate() {
 }
 
 // Functions for viewing an event
-async function loadEventDetails(eventCode) {
+async function loadGuestView(eventCode) {
     try {
-        // Load the event from Firestore
-        const event = await getEvent(eventCode);
+        // Get the event from Firestore
+        const doc = await db.collection('events').doc(eventCode).get();
         
-        if (event) {
-            currentEvent = event;
-            
-            // Update UI with event details
-            document.getElementById('eventNameHeader').textContent = event.name;
-            document.getElementById('eventDate').textContent = formatDate(event.date);
-            document.getElementById('eventTime').textContent = formatTime(event.time);
-            document.getElementById('eventLocation').textContent = event.location;
-            document.getElementById('eventDescription').textContent = event.description;
-            
-            // Load guest list
-            updateGuestList();
-            updateGuestStats();
-            
-            // Check if the user has already RSVP'd
-            checkUserRsvpStatus();
-        } else {
+        if (!doc.exists) {
             // Event not found
-            document.getElementById('eventDetails').classList.add('hidden');
+            document.getElementById('guestView').classList.add('hidden');
             document.getElementById('eventNotFound').classList.remove('hidden');
+            return;
+        }
+        
+        // Get event data
+        const event = doc.data();
+        currentEvent = event;
+        
+        // Update UI with basic event details
+        document.getElementById('eventNameHeader').textContent = event.name;
+        document.getElementById('guestEventName').textContent = event.name;
+        document.getElementById('guestEventDate').textContent = formatDate(event.date);
+        document.getElementById('guestEventTime').textContent = formatTime(event.time);
+        document.getElementById('guestEventLocation').textContent = event.location;
+        document.getElementById('guestEventDescription').textContent = event.description;
+        
+        // Update attending guest list
+        updateAttendingList();
+        
+        // Check if the user has already RSVP'd
+        checkUserRsvpStatus();
+        
+        // Check if host access code is in localStorage
+        const storedAccessCode = localStorage.getItem(`host_access_${eventCode}`);
+        if (storedAccessCode && storedAccessCode === event.hostAccessCode) {
+            isHostAuthenticated = true;
         }
     } catch (error) {
-        console.error('Error loading event details:', error);
+        console.error('Error loading event details for guest view:', error);
         alert('Error loading event details. Please try again.');
     }
 }
@@ -250,6 +277,31 @@ function formatDate(dateString) {
 function formatTime(timeString) {
     if (!timeString) return 'TBD';
     return timeString;
+}
+
+function updateAttendingList() {
+    const attendingList = document.getElementById('attendingList');
+    attendingList.innerHTML = '';
+    
+    if (currentEvent && currentEvent.invitees) {
+        // Filter only attending guests
+        const attendingGuests = currentEvent.invitees.filter(invitee => invitee.status === 'yes');
+        
+        if (attendingGuests.length > 0) {
+            attendingGuests.forEach(invitee => {
+                const li = document.createElement('li');
+                li.textContent = invitee.name;
+                attendingList.appendChild(li);
+            });
+        } else {
+            const li = document.createElement('li');
+            li.className = 'empty-message';
+            li.textContent = 'No one has confirmed attendance yet.';
+            li.style.fontStyle = 'italic';
+            li.style.color = '#6c757d';
+            attendingList.appendChild(li);
+        }
+    }
 }
 
 function updateGuestList() {
@@ -351,33 +403,55 @@ function checkUserRsvpStatus() {
     const guestResponse = localStorage.getItem(`rsvp_${currentEvent.id}_response`);
     
     if (guestName && guestResponse) {
-        // User has already responded
-        document.getElementById('rsvpForm').classList.add('hidden');
-        document.getElementById('alreadyResponded').classList.remove('hidden');
+        // User has already responded - need to update both views
         
-        // Display their current response
-        let responseText = '';
-        switch(guestResponse) {
-            case 'yes':
-                responseText = 'Attending';
-                break;
-            case 'no':
-                responseText = 'Not Attending';
-                break;
-            case 'maybe':
-                responseText = 'Maybe';
-                break;
+        // Update guest view
+        const guestViewRsvpForm = document.querySelector('#guestView #rsvpForm');
+        const guestViewAlreadyResponded = document.querySelector('#guestView #alreadyResponded');
+        const guestViewCurrentResponse = document.querySelector('#guestView #currentResponse');
+        
+        if (guestViewRsvpForm && guestViewAlreadyResponded) {
+            guestViewRsvpForm.classList.add('hidden');
+            guestViewAlreadyResponded.classList.remove('hidden');
+            
+            // Display their current response
+            let responseText = getStatusText(guestResponse);
+            guestViewCurrentResponse.textContent = responseText;
+            
+            // Pre-fill the form in case they want to change their response
+            document.querySelector('#guestView #guestName').value = guestName;
         }
-        document.getElementById('currentResponse').textContent = responseText;
         
-        // Pre-fill the form in case they want to change their response
-        document.getElementById('guestName').value = guestName;
+        // Update host view if it exists
+        const hostViewRsvpForm = document.querySelector('#eventDetails #rsvpForm');
+        const hostViewAlreadyResponded = document.querySelector('#eventDetails #alreadyResponded');
+        const hostViewCurrentResponse = document.querySelector('#eventDetails #currentResponse');
+        
+        if (hostViewRsvpForm && hostViewAlreadyResponded) {
+            hostViewRsvpForm.classList.add('hidden');
+            hostViewAlreadyResponded.classList.remove('hidden');
+            
+            // Display their current response
+            let responseText = getStatusText(guestResponse);
+            hostViewCurrentResponse.textContent = responseText;
+            
+            // Pre-fill the form in case they want to change their response
+            document.querySelector('#eventDetails #guestName').value = guestName;
+        }
     }
 }
 
 function showRsvpForm() {
-    document.getElementById('alreadyResponded').classList.add('hidden');
-    document.getElementById('rsvpForm').classList.remove('hidden');
+    // Determine which view is active
+    if (isHostAuthenticated && document.getElementById('eventDetails').classList.contains('hidden') === false) {
+        // Host view
+        document.querySelector('#eventDetails #alreadyResponded').classList.add('hidden');
+        document.querySelector('#eventDetails #rsvpForm').classList.remove('hidden');
+    } else {
+        // Guest view
+        document.querySelector('#guestView #alreadyResponded').classList.add('hidden');
+        document.querySelector('#guestView #rsvpForm').classList.remove('hidden');
+    }
 }
 
 async function respondToInvitation(response) {
@@ -417,16 +491,23 @@ async function respondToInvitation(response) {
                 // Save the updated event to Firestore
                 await saveEvent(currentEvent);
                 
-                // Update the UI
-                updateGuestList();
-                updateGuestStats();
-                if (isHostAuthenticated) {
+                // Update the UI based on current view
+                if (isHostAuthenticated && document.getElementById('eventDetails').classList.contains('hidden') === false) {
+                    // If host view is active
+                    updateGuestList();
+                    updateGuestStats();
                     updateDetailedGuestList();
+                } else {
+                    // Guest view
+                    updateAttendingList();
                 }
                 
                 // Show success message
-                document.getElementById('rsvpForm').classList.add('hidden');
-                document.getElementById('rsvpSuccess').classList.remove('hidden');
+                const rsvpForm = document.querySelector('#' + (isHostAuthenticated ? 'eventDetails' : 'guestView') + ' #rsvpForm');
+                const rsvpSuccess = document.querySelector('#' + (isHostAuthenticated ? 'eventDetails' : 'guestView') + ' #rsvpSuccess');
+                
+                rsvpForm.classList.add('hidden');
+                rsvpSuccess.classList.remove('hidden');
             }
         } catch (error) {
             console.error('Error responding to invitation:', error);
@@ -438,21 +519,49 @@ async function respondToInvitation(response) {
 }
 
 // Host authentication and management functions
-function authenticateHost() {
-    const inputCode = document.getElementById('hostEventCode').value.trim();
+async function verifyAccessCode() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const eventCode = urlParams.get('code');
+    const accessCode = document.getElementById('accessCodeInput').value.trim();
     
-    if (currentEvent && inputCode === currentEvent.id) {
-        // Successful authentication
-        isHostAuthenticated = true;
+    if (!accessCode) {
+        alert('Please enter the host access code.');
+        return;
+    }
+    
+    try {
+        // Get the event from Firestore
+        const event = await getEvent(eventCode);
         
-        // Hide authentication form and show host panel
-        document.getElementById('hostAuthSection').classList.add('hidden');
-        document.getElementById('hostPanel').classList.remove('hidden');
-        
-        // Load detailed guest data
-        updateDetailedGuestList();
-    } else {
-        alert('Invalid event code. Please try again.');
+        if (event && event.hostAccessCode === accessCode) {
+            // Correct access code
+            currentEvent = event;
+            isHostAuthenticated = true;
+            
+            // Hide guest view and access form, show host view
+            document.getElementById('guestView').classList.add('hidden');
+            document.getElementById('eventAccessForm').classList.add('hidden');
+            document.getElementById('eventDetails').classList.remove('hidden');
+            
+            // Update UI with event details for host view
+            document.getElementById('eventNameHeader').textContent = event.name;
+            document.getElementById('eventDate').textContent = formatDate(event.date);
+            document.getElementById('eventTime').textContent = formatTime(event.time);
+            document.getElementById('eventLocation').textContent = event.location;
+            document.getElementById('eventDescription').textContent = event.description;
+            
+            // Load complete guest list for host
+            updateGuestList();
+            updateGuestStats();
+            
+            // Store access code in localStorage for this event
+            localStorage.setItem(`host_access_${eventCode}`, accessCode);
+        } else {
+            alert('Invalid access code. Please try again.');
+        }
+    } catch (error) {
+        console.error('Error verifying access code:', error);
+        alert('Error accessing the event. Please try again.');
     }
 }
 
@@ -655,4 +764,16 @@ async function getEvent(eventId) {
         alert('Error retrieving event data. Please try again.');
         return null;
     }
+}
+
+// Function to show the host login form
+function showHostLogin() {
+    document.getElementById('guestView').classList.add('hidden');
+    document.getElementById('eventAccessForm').classList.remove('hidden');
+}
+
+// Function to go back to guest view
+function backToGuestView() {
+    document.getElementById('eventAccessForm').classList.add('hidden');
+    document.getElementById('guestView').classList.remove('hidden');
 }

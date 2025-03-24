@@ -40,6 +40,15 @@
             </div>
             
             <div class="form-group">
+                <label for="hostAccessCode">Host Access Code:</label>
+                <div class="access-code-container">
+                    <input type="text" id="hostAccessCode" placeholder="Create a secure access code">
+                    <button type="button" class="btn btn-sm" onclick="generateRandomCode()">Generate</button>
+                </div>
+                <p class="help-text">This code will be required to view and manage the event. Keep it secure.</p>
+            </div>
+            
+            <div class="form-group">
                 <label>Invite People:</label>
                 <div class="invitee-options">
                     <div class="invitee-input-container">
@@ -66,6 +75,10 @@
         <div id="eventCreatedMessage" class="hidden">
             <h2>Event Created Successfully!</h2>
             <p>Your event code is: <span id="eventCode"></span></p>
+            <p>Your host access code is: <span id="hostCodeDisplay"></span></p>
+            <div class="warning-message">
+                <p>⚠️ Please save your host access code. You'll need it to manage your event.</p>
+            </div>
             <p>Share this link with your invitees:</p>
             <div class="event-link-container">
                 <input type="text" id="eventLink" readonly>

@@ -19,7 +19,82 @@
             <a href="index.html" class="btn">Back to Home</a>
         </div>
         
-        <div id="eventDetails">
+        <!-- Guest View (Default view for guests to RSVP) -->
+        <div id="guestView">
+            <div class="event-basic-info">
+                <h2 id="guestEventName">Event Name</h2>
+                <div class="detail-item">
+                    <span class="label">Date:</span>
+                    <span id="guestEventDate" class="value"></span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Time:</span>
+                    <span id="guestEventTime" class="value"></span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Location:</span>
+                    <span id="guestEventLocation" class="value"></span>
+                </div>
+                <div class="detail-item">
+                    <span class="label">Description:</span>
+                    <p id="guestEventDescription" class="value"></p>
+                </div>
+            </div>
+            
+            <div class="rsvp-section">
+                <h3>RSVP to this event</h3>
+                <div id="rsvpForm">
+                    <div class="form-group">
+                        <label for="guestName">Your Name:</label>
+                        <input type="text" id="guestName" placeholder="Enter your name">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Will you attend?</label>
+                        <div class="rsvp-options">
+                            <button onclick="respondToInvitation('yes')" class="btn btn-yes">Yes, I'll be there</button>
+                            <button onclick="respondToInvitation('no')" class="btn btn-no">No, I can't make it</button>
+                            <button onclick="respondToInvitation('maybe')" class="btn btn-maybe">Maybe</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="rsvpSuccess" class="hidden">
+                    <p>Thank you for your response!</p>
+                </div>
+                
+                <div id="alreadyResponded" class="hidden">
+                    <p>You have already responded to this invitation.</p>
+                    <p>Your response: <span id="currentResponse"></span></p>
+                    <button onclick="showRsvpForm()" class="btn btn-sm">Change Response</button>
+                </div>
+            </div>
+            
+            <div class="attending-list-section">
+                <h3>Who's Attending</h3>
+                <ul id="attendingList" class="attending-list"></ul>
+            </div>
+            
+            <!-- Host Login Option -->
+            <div class="host-login-option">
+                <p>Are you the host?</p>
+                <button onclick="showHostLogin()" class="btn btn-sm">Host Login</button>
+            </div>
+        </div>
+        
+        <!-- Host Login Form (Hidden by default) -->
+        <div id="eventAccessForm" class="hidden">
+            <h2>Host Access</h2>
+            <p>Enter the host access code to manage this event:</p>
+            <div class="form-group">
+                <input type="text" id="accessCodeInput" placeholder="Enter host access code">
+                <button onclick="verifyAccessCode()" class="btn">Access Event</button>
+            </div>
+            <button onclick="backToGuestView()" class="btn btn-sm">Back to Guest View</button>
+        </div>
+        
+        <!-- Host View (Hidden by default, requires access code) -->
+        <div id="eventDetails" class="hidden">
             <div class="event-info">
                 <div class="detail-item">
                     <span class="label">Date:</span>
@@ -45,11 +120,8 @@
             <!-- Host Authentication Section -->
             <div class="host-auth-section" id="hostAuthSection">
                 <h3>Event Host Access</h3>
-                <p>Enter the event code to access host controls:</p>
-                <div class="form-group">
-                    <input type="text" id="hostEventCode" placeholder="Enter event code">
-                    <button onclick="authenticateHost()" class="btn">Access Host View</button>
-                </div>
+                <p>You already have host access to this event.</p>
+                <button onclick="showHostPanel()" class="btn">Access Host Controls</button>
             </div>
             
             <!-- Host Control Panel (Hidden by default) -->
