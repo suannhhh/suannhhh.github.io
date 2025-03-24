@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Event - RSVP App</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Create a New Event</h1>
+            <a href="index.html" class="btn btn-sm">Back to Home</a>
+        </header>
+        
+        <div class="event-form">
+            <div class="form-group">
+                <label for="eventName">Event Name:</label>
+                <input type="text" id="eventName" placeholder="Enter event name">
+            </div>
+            
+            <div class="form-group">
+                <label for="eventDate">Event Date:</label>
+                <input type="date" id="eventDate">
+            </div>
+            
+            <div class="form-group">
+                <label for="eventTime">Event Time:</label>
+                <input type="time" id="eventTime">
+            </div>
+            
+            <div class="form-group">
+                <label for="eventLocation">Event Location:</label>
+                <input type="text" id="eventLocation" placeholder="Enter event location">
+            </div>
+            
+            <div class="form-group">
+                <label for="eventDescription">Event Description:</label>
+                <textarea id="eventDescription" placeholder="Enter event details"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label for="hostAccessCode">Host Access Code:</label>
+                <div class="access-code-container">
+                    <input type="text" id="hostAccessCode" placeholder="Create a secure access code">
+                    <button type="button" class="btn btn-sm" onclick="generateRandomCode()">Generate</button>
+                </div>
+                <p class="help-text">This code will be required to view and manage the event. Keep it secure.</p>
+            </div>
+            
+            <div class="form-group">
+                <label>Invite People:</label>
+                <div class="invitee-options">
+                    <div class="invitee-input-container">
+                        <input type="text" id="inviteeName" placeholder="Guest Name">
+                        <button onclick="addInvitee()" class="btn btn-sm">Add</button>
+                    </div>
+                    
+                    <div class="guest-upload-container">
+                        <p>Or upload a guest list file:</p>
+                        <input type="file" id="createEventGuestFile" accept=".xlsx, .xls, .csv">
+                        <button onclick="uploadGuestListCreate()" class="btn btn-sm">Upload Guests</button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="invitee-list">
+                <h3>Invited People:</h3>
+                <ul id="inviteesList"></ul>
+            </div>
+            
+            <button onclick="submitEvent()" class="btn">Create Event</button>
+        </div>
+        
+        <div id="eventCreatedMessage" class="hidden">
+            <h2>Event Created Successfully!</h2>
+            <p>Your event code is: <span id="eventCode"></span></p>
+            <p>Your host access code is: <span id="hostCodeDisplay"></span></p>
+            <div class="warning-message">
+                <p>⚠️ Please save your host access code. You'll need it to manage your event.</p>
+            </div>
+            <p>Share this link with your invitees:</p>
+            <div class="event-link-container">
+                <input type="text" id="eventLink" readonly>
+                <button onclick="copyEventLink()" class="btn btn-sm">Copy</button>
+            </div>
+            <a href="index.html" class="btn">Back to Home</a>
+        </div>
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RSVP App</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>RSVP Application</h1>
+        <div class="options">
+            <div class="option">
+                <h2>Create an Event</h2>
+                <p>Host an event and invite people</p>
+                <a href="createEvent.html" class="btn">Create Event</a>
+            </div>
+            <div class="option">
+                <h2>View an Event</h2>
+                <p>Have an invitation? Enter your event code</p>
+                <div class="event-code-form">
+                    <input type="text" id="eventCodeInput" placeholder="Enter event code">
+                    <button onclick="goToEvent()" class="btn">Go to Event</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

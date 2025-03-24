@@ -1,0 +1,16 @@
+# Firebase configuration files
+firebase-config.js
+firebase-config.local.js
+
+# Dependency directories
+node_modules/
+
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS generated files
+.DS_Store
+Thumbs.db
