@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Details - RSVP App</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1 id="eventNameHeader">Event Details</h1>
+            <a href="index.html" class="btn btn-sm">Back to Home</a>
+        </header>
+        
+        <div id="eventNotFound" class="hidden">
+            <h2>Event Not Found</h2>
+            <p>The event you're looking for doesn't exist or has been removed.</p>
+            <a href="index.html" class="btn">Back to Home</a>
+        </div>
+        
+        <div id="eventDetails">
+            <div class="event-info">
+                <div class="detail-item">
+                    <span class="label">Date:</span>
+                    <span id="eventDate" class="value"></span>
+                </div>
+                
+                <div class="detail-item">
+                    <span class="label">Time:</span>
+                    <span id="eventTime" class="value"></span>
+                </div>
+                
+                <div class="detail-item">
+                    <span class="label">Location:</span>
+                    <span id="eventLocation" class="value"></span>
+                </div>
+                
+                <div class="detail-item">
+                    <span class="label">Description:</span>
+                    <p id="eventDescription" class="value"></p>
+                </div>
+            </div>
+            
+            <!-- Host Authentication Section -->
+            <div class="host-auth-section" id="hostAuthSection">
+                <h3>Event Host Access</h3>
+                <p>Enter the event code to access host controls:</p>
+                <div class="form-group">
+                    <input type="text" id="hostEventCode" placeholder="Enter event code">
+                    <button onclick="authenticateHost()" class="btn">Access Host View</button>
+                </div>
+            </div>
+            
+            <!-- Host Control Panel (Hidden by default) -->
+            <div class="host-panel hidden" id="hostPanel">
+                <div class="host-controls">
+                    <h3>Host Controls</h3>
+                    <p>Welcome, Event Host!</p>
+                    <div class="host-actions">
+                        <button onclick="exportGuestList()" class="btn btn-sm">Export Guest List</button>
+                        <button onclick="toggleDetailedView()" class="btn btn-sm" id="viewToggleBtn">Show Detailed View</button>
+                    </div>
+                </div>
+                
+                <div class="detailed-guest-list hidden" id="detailedGuestList">
+                    <h3>Complete Guest Information</h3>
+                    <table class="guest-table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Status</th>
+                                <th>Response Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="detailedGuestsTable">
+                            <!-- Guest details will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="rsvp-section">
+                <h3>RSVP to this event</h3>
+                <div id="rsvpForm">
+                    <div class="form-group">
+                        <label for="guestName">Your Name:</label>
+                        <input type="text" id="guestName" placeholder="Enter your name">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="guestEmail">Your Email:</label>
+                        <input type="email" id="guestEmail" placeholder="Enter your email">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Will you attend?</label>
+                        <div class="rsvp-options">
+                            <button onclick="respondToInvitation('yes')" class="btn btn-yes">Yes, I'll be there</button>
+                            <button onclick="respondToInvitation('no')" class="btn btn-no">No, I can't make it</button>
+                            <button onclick="respondToInvitation('maybe')" class="btn btn-maybe">Maybe</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="rsvpSuccess" class="hidden">
+                    <p>Thank you for your response!</p>
+                </div>
+                
+                <div id="alreadyResponded" class="hidden">
+                    <p>You have already responded to this invitation.</p>
+                    <p>Your response: <span id="currentResponse"></span></p>
+                    <button onclick="showRsvpForm()" class="btn btn-sm">Change Response</button>
+                </div>
+            </div>
+            
+            <div class="guest-list-section">
+                <h3>Guest List</h3>
+                <div class="guest-list">
+                    <div class="guest-stats">
+                        <div class="stat">
+                            <span class="count" id="attendingCount">0</span>
+                            <span class="label">Attending</span>
+                        </div>
+                        <div class="stat">
+                            <span class="count" id="declinedCount">0</span>
+                            <span class="label">Declined</span>
+                        </div>
+                        <div class="stat">
+                            <span class="count" id="maybeCount">0</span>
+                            <span class="label">Maybe</span>
+                        </div>
+                        <div class="stat">
+                            <span class="count" id="pendingCount">0</span>
+                            <span class="label">Pending</span>
+                        </div>
+                    </div>
+                    
+                    <div class="guest-tabs">
+                        <button class="tab-btn active" onclick="showGuestTab('all')">All</button>
+                        <button class="tab-btn" onclick="showGuestTab('attending')">Attending</button>
+                        <button class="tab-btn" onclick="showGuestTab('declined')">Declined</button>
+                        <button class="tab-btn" onclick="showGuestTab('maybe')">Maybe</button>
+                        <button class="tab-btn" onclick="showGuestTab('pending')">Pending</button>
+                    </div>
+                    
+                    <ul id="guestsList" class="guests-list"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>

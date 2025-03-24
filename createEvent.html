@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Event - RSVP App</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Create a New Event</h1>
+            <a href="index.html" class="btn btn-sm">Back to Home</a>
+        </header>
+        
+        <div class="event-form">
+            <div class="form-group">
+                <label for="eventName">Event Name:</label>
+                <input type="text" id="eventName" placeholder="Enter event name">
+            </div>
+            
+            <div class="form-group">
+                <label for="eventDate">Event Date:</label>
+                <input type="date" id="eventDate">
+            </div>
+            
+            <div class="form-group">
+                <label for="eventTime">Event Time:</label>
+                <input type="time" id="eventTime">
+            </div>
+            
+            <div class="form-group">
+                <label for="eventLocation">Event Location:</label>
+                <input type="text" id="eventLocation" placeholder="Enter event location">
+            </div>
+            
+            <div class="form-group">
+                <label for="eventDescription">Event Description:</label>
+                <textarea id="eventDescription" placeholder="Enter event details"></textarea>
+            </div>
+            
+            <div class="form-group">
+                <label>Invite People:</label>
+                <div class="invitee-input-container">
+                    <input type="text" id="inviteeName" placeholder="Name">
+                    <input type="email" id="inviteeEmail" placeholder="Email">
+                    <button onclick="addInvitee()" class="btn btn-sm">Add</button>
+                </div>
+            </div>
+            
+            <div class="invitee-list">
+                <h3>Invited People:</h3>
+                <ul id="inviteesList"></ul>
+            </div>
+            
+            <button onclick="submitEvent()" class="btn">Create Event</button>
+        </div>
+        
+        <div id="eventCreatedMessage" class="hidden">
+            <h2>Event Created Successfully!</h2>
+            <p>Your event code is: <span id="eventCode"></span></p>
+            <p>Share this link with your invitees:</p>
+            <div class="event-link-container">
+                <input type="text" id="eventLink" readonly>
+                <button onclick="copyEventLink()" class="btn btn-sm">Copy</button>
+            </div>
+            <a href="index.html" class="btn">Back to Home</a>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
