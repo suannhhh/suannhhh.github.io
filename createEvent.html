@@ -3,94 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Event - RSVP App</title>
+    <title>Create Raya Open House - RSVP App</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>Create a New Event</h1>
-            <a href="index.html" class="btn btn-sm">Back to Home</a>
+            <h1>Create Raya Open House</h1>
+            <a href="index.html" class="btn">Back to Home</a>
         </header>
         
         <div class="event-form">
+            <h2>Open House Details</h2>
             <div class="form-group">
-                <label for="eventName">Event Name:</label>
-                <input type="text" id="eventName" placeholder="Enter event name">
+                <label for="eventName">Event Name</label>
+                <input type="text" id="eventName" placeholder="e.g., Raya Open House 2025">
             </div>
             
             <div class="form-group">
-                <label for="eventDate">Event Date:</label>
+                <label for="eventDate">Date</label>
                 <input type="date" id="eventDate">
             </div>
             
             <div class="form-group">
-                <label for="eventTime">Event Time:</label>
+                <label for="eventTime">Time</label>
                 <input type="time" id="eventTime">
             </div>
             
             <div class="form-group">
-                <label for="eventLocation">Event Location:</label>
-                <input type="text" id="eventLocation" placeholder="Enter event location">
+                <label for="eventLocation">Location</label>
+                <input type="text" id="eventLocation" placeholder="Enter your address">
             </div>
             
             <div class="form-group">
-                <label for="eventDescription">Event Description:</label>
-                <textarea id="eventDescription" placeholder="Enter event details"></textarea>
+                <label for="eventDescription">Description</label>
+                <textarea id="eventDescription" placeholder="Additional details about your Raya celebration (e.g., dress code, parking information)"></textarea>
             </div>
             
             <div class="form-group">
-                <label for="hostAccessCode">Host Access Code:</label>
-                <div class="access-code-container">
-                    <input type="text" id="hostAccessCode" placeholder="Create a secure access code">
-                    <button type="button" class="btn btn-sm" onclick="generateRandomCode()">Generate</button>
+                <label for="hostAccessCode">Host Access Code</label>
+                <div class="invitee-input-container">
+                    <input type="text" id="hostAccessCode" placeholder="Create a code or generate one" readonly>
+                    <button onclick="generateRandomCode()" class="btn">Generate Code</button>
                 </div>
-                <p class="help-text">This code will be required to view and manage the event. Keep it secure.</p>
+                <p style="color: #666; margin-top: 5px;">This code will let you manage your event later</p>
             </div>
-            
-            <div class="form-group">
-                <label>Invite People:</label>
-                <div class="invitee-options">
-                    <div class="invitee-input-container">
-                        <input type="text" id="inviteeName" placeholder="Guest Name">
-                        <button onclick="addInvitee()" class="btn btn-sm">Add</button>
-                    </div>
-                    
-                    <div class="guest-upload-container">
-                        <p>Or upload a guest list file:</p>
-                        <input type="file" id="createEventGuestFile" accept=".xlsx, .xls, .csv">
-                        <button onclick="uploadGuestListCreate()" class="btn btn-sm">Upload Guests</button>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="invitee-list">
-                <h3>Invited People:</h3>
-                <ul id="inviteesList"></ul>
-            </div>
-            
-            <button onclick="submitEvent()" class="btn">Create Event</button>
         </div>
         
-        <div id="eventCreatedMessage" class="hidden">
-            <h2>Event Created Successfully!</h2>
-            <p>Your event code is: <span id="eventCode"></span></p>
-            <p>Your host access code is: <span id="hostCodeDisplay"></span></p>
-            <div class="warning-message">
-                <p>⚠️ Please save your host access code. You'll need it to manage your event.</p>
+        <div class="invitee-options">
+            <div class="guest-upload-container">
+                <h3>Upload Guest List</h3>
+                <p>Upload an Excel file (.xlsx) or CSV file with your guest names</p>
+                <input type="file" id="createEventGuestFile" accept=".xlsx, .xls, .csv">
+                <button onclick="uploadGuestListCreate()" class="btn">Upload</button>
             </div>
-            <p>Share this link with your invitees:</p>
+            
+            <div>
+                <h3>Add Guests Manually</h3>
+                <div class="invitee-input-container">
+                    <input type="text" id="inviteeName" placeholder="Enter guest name">
+                    <button onclick="addInvitee()" class="btn">Add Guest</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="invitee-list">
+            <h3>Guest List</h3>
+            <ul id="inviteesList"></ul>
+        </div>
+        
+        <button onclick="submitEvent()" class="btn" style="margin-top: 20px;">Create Open House Event</button>
+        
+        <!-- Success Message (Hidden by default) -->
+        <div id="eventCreatedMessage" class="hidden">
+            <h2>Your Raya Open House Event is Created!</h2>
+            <p>Share this link with your guests:</p>
             <div class="event-link-container">
                 <input type="text" id="eventLink" readonly>
-                <button onclick="copyEventLink()" class="btn btn-sm">Copy</button>
+                <button onclick="copyEventLink()" class="btn">Copy Link</button>
             </div>
+            <p>Your event code: <span id="eventCode"></span></p>
+            <p>Host access code: <span id="hostCodeDisplay"></span></p>
+            <p style="color: #666;">Keep your host access code safe - you'll need it to manage your event</p>
             <a href="index.html" class="btn">Back to Home</a>
         </div>
     </div>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    
-    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
     <script src="firebase-config.js"></script>

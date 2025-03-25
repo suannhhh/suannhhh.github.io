@@ -3,26 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Event Details - RSVP App</title>
+    <title>Raya Open House Details - RSVP App</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1 id="eventNameHeader">Event Details</h1>
-            <a href="index.html" class="btn btn-sm">Back to Home</a>
+            <h1 id="eventNameHeader">Raya Open House Details</h1>
+            <a href="index.html" class="btn">Back to Home</a>
         </header>
         
         <div id="eventNotFound" class="hidden">
             <h2>Event Not Found</h2>
-            <p>The event you're looking for doesn't exist or has been removed.</p>
+            <p>The Raya open house you're looking for doesn't exist or has been removed.</p>
             <a href="index.html" class="btn">Back to Home</a>
         </div>
         
-        <!-- Guest View (Default view for guests to RSVP) -->
+        <!-- Guest View -->
         <div id="guestView">
             <div class="event-basic-info">
-                <h2 id="guestEventName">Event Name</h2>
+                <h2 id="guestEventName">Raya Open House</h2>
                 <div class="detail-item">
                     <span class="label">Date:</span>
                     <span id="guestEventDate" class="value"></span>
@@ -42,7 +42,7 @@
             </div>
             
             <div class="rsvp-section">
-                <h3>RSVP to this event</h3>
+                <h3>RSVP to this Raya celebration</h3>
                 <div id="rsvpForm">
                     <div class="form-group">
                         <label for="guestName">Your Name:</label>
@@ -50,7 +50,7 @@
                     </div>
                     
                     <div class="form-group">
-                        <label>Will you attend?</label>
+                        <label>Will you join us for Raya?</label>
                         <div class="rsvp-options">
                             <button onclick="respondToInvitation('yes')" class="btn btn-yes">Yes, I'll be there</button>
                             <button onclick="respondToInvitation('no')" class="btn btn-no">No, I can't make it</button>
@@ -60,7 +60,7 @@
                 </div>
                 
                 <div id="rsvpSuccess" class="hidden">
-                    <p>Thank you for your response!</p>
+                    <p>Terima kasih! Thank you for your response!</p>
                 </div>
                 
                 <div id="alreadyResponded" class="hidden">
@@ -71,7 +71,7 @@
             </div>
             
             <div class="attending-list-section">
-                <h3>Who's Attending</h3>
+                <h3>Who's Joining the Celebration</h3>
                 <ul id="attendingList" class="attending-list"></ul>
             </div>
             
