@@ -777,3 +777,10 @@ function backToGuestView() {
     document.getElementById('eventAccessForm').classList.add('hidden');
     document.getElementById('guestView').classList.remove('hidden');
 }
+
+// Function to show the host panel when the button is clicked
+function showHostPanel() {
+    document.getElementById('hostPanel').classList.remove('hidden');
+    document.getElementById('hostAuthSection').classList.add('hidden');
+}
+window.showHostPanel = showHostPanel;

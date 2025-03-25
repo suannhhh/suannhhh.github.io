@@ -1,0 +1,41 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Configure Firebase
+        run: |
+          cat > firebase-config.js << 'EOF'
+          // Firebase configuration
+          const firebaseConfig = {
+            apiKey: "${{ secrets.FIREBASE_API_KEY }}",
+            authDomain: "${{ secrets.FIREBASE_PROJECT_ID }}.firebaseapp.com",
+            projectId: "${{ secrets.FIREBASE_PROJECT_ID }}",
+            storageBucket: "${{ secrets.FIREBASE_PROJECT_ID }}.appspot.com",
+            messagingSenderId: "${{ secrets.FIREBASE_MESSAGING_SENDER_ID }}",
+            appId: "${{ secrets.FIREBASE_APP_ID }}"
+          };
+
+          // Initialize Firebase
+          if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+          }
+
+          // Get a reference to the firestore service
+          const db = firebase.firestore();
+          EOF
+
+      - name: Deploy to GitHub Pages
+        uses: JamesIves/github-pages-deploy-action@4.1.4
+        with:
+          branch: gh-pages
+          folder: .
