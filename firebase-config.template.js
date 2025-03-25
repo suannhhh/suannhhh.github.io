@@ -1,12 +1,12 @@
 // Template Firebase configuration
 // IMPORTANT: Rename this file to firebase-config.js and fill in your actual Firebase credentials
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyC35SC0nF0uKrUXh_JAqCJ6WsfV4jzGHKE",
+  authDomain: "rsvp-8fc6b.firebaseapp.com",
+  projectId: "rsvp-8fc6b",
+  storageBucket: "rsvp-8fc6b.firebasestorage.app",
+  messagingSenderId: "375382418485",
+  appId: "1:375382418485:web:95cfa60c94dfea0844bd7c"
 };
 
 // Initialize Firebase
