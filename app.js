@@ -2,11 +2,26 @@
 let currentEvent = null;
 let currentInvitees = [];
 let isHostAuthenticated = false;
+let db; // Database reference
 
 // Initialize the application based on the current page
 document.addEventListener('DOMContentLoaded', function() {
     const path = window.location.pathname;
     const filename = path.substring(path.lastIndexOf('/') + 1);
+    
+    // Initialize Firebase database if not already initialized
+    if (typeof firebase !== 'undefined' && !db) {
+        try {
+            db = firebase.firestore();
+            console.log('Firestore database initialized successfully');
+        } catch (error) {
+            console.error('Error initializing Firestore:', error);
+            alert('Error connecting to the database. Some features may not work properly.');
+        }
+    } else if (typeof firebase === 'undefined') {
+        console.error('Firebase is not defined. Make sure firebase-config.js is loaded before app.js');
+        alert('Error loading Firebase. Some features may not work properly.');
+    }
     
     if (filename === 'index.html' || filename === '') {
         // Home page initialization
@@ -736,6 +751,15 @@ async function uploadGuestList() {
 // Modified localStorage functions to use Firebase instead
 async function saveEvent(event) {
     try {
+        // Ensure db is defined
+        if (!db && typeof firebase !== 'undefined') {
+            db = firebase.firestore();
+        }
+        
+        if (!db) {
+            throw new Error('Firebase database is not initialized');
+        }
+        
         // Store the event in Firestore
         await db.collection('events').doc(event.id).set(event);
         console.log('Event saved to Firestore:', event.id);
@@ -756,6 +780,15 @@ async function saveEvent(event) {
 
 async function getEvent(eventId) {
     try {
+        // Ensure db is defined
+        if (!db && typeof firebase !== 'undefined') {
+            db = firebase.firestore();
+        }
+        
+        if (!db) {
+            throw new Error('Firebase database is not initialized');
+        }
+        
         // Get the event from Firestore
         const doc = await db.collection('events').doc(eventId).get();
         
@@ -783,3 +816,23 @@ function backToGuestView() {
     document.getElementById('eventAccessForm').classList.add('hidden');
     document.getElementById('guestView').classList.remove('hidden');
 }
+
+// At the end of the file, make functions available globally AFTER they're defined
+// Make sure important functions are available globally
+window.generateRandomCode = generateRandomCode;
+window.goToEvent = goToEvent;
+window.addInvitee = addInvitee;
+window.removeInvitee = removeInvitee;
+window.submitEvent = submitEvent;
+window.copyEventLink = copyEventLink;
+window.uploadGuestListCreate = uploadGuestListCreate;
+window.showHostLogin = showHostLogin;
+window.backToGuestView = backToGuestView;
+window.respondToInvitation = respondToInvitation;
+window.showRsvpForm = showRsvpForm;
+window.verifyAccessCode = verifyAccessCode;
+window.toggleDetailedView = toggleDetailedView;
+window.exportGuestList = exportGuestList;
+window.uploadGuestList = uploadGuestList;
+window.showHostPanel = showHostPanel;
+window.showGuestTab = showGuestTab;
