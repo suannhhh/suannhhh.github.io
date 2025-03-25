@@ -2,23 +2,25 @@
 let currentEvent = null;
 let currentInvitees = [];
 let isHostAuthenticated = false;
-let db; // Database reference
 
 // Initialize the application based on the current page
 document.addEventListener('DOMContentLoaded', function() {
     const path = window.location.pathname;
     const filename = path.substring(path.lastIndexOf('/') + 1);
     
-    // Initialize Firebase database if not already initialized
-    if (typeof firebase !== 'undefined' && !db) {
+    // Use the existing db from firebase-config.js if available
+    if (typeof db !== 'undefined') {
+        console.log('Using Firestore database from firebase-config.js');
+    } else if (typeof firebase !== 'undefined') {
         try {
-            db = firebase.firestore();
+            // If db is not defined but firebase is, initialize db
+            window.db = firebase.firestore();
             console.log('Firestore database initialized successfully');
         } catch (error) {
             console.error('Error initializing Firestore:', error);
             alert('Error connecting to the database. Some features may not work properly.');
         }
-    } else if (typeof firebase === 'undefined') {
+    } else {
         console.error('Firebase is not defined. Make sure firebase-config.js is loaded before app.js');
         alert('Error loading Firebase. Some features may not work properly.');
     }
