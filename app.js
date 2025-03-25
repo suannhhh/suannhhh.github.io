@@ -8,12 +8,25 @@ document.addEventListener('DOMContentLoaded', function() {
     const path = window.location.pathname;
     const filename = path.substring(path.lastIndexOf('/') + 1);
     
-    // Use the existing db from firebase-config.js if available
-    if (typeof db !== 'undefined') {
-        console.log('Using Firestore database from firebase-config.js');
-    } else if (typeof firebase !== 'undefined') {
+    // Initialize Firebase if not already initialized
+    if (typeof firebase !== 'undefined') {
         try {
-            // If db is not defined but firebase is, initialize db
+            // Check if Firebase app is already initialized
+            if (!firebase.apps.length) {
+                // If using GitHub Pages and firebase-config.js is not available, initialize with environment variables or defaults
+                const firebaseConfig = {
+                    apiKey: "YOUR_API_KEY",
+                    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+                    projectId: "YOUR_PROJECT_ID",
+                    storageBucket: "YOUR_PROJECT_ID.appspot.com",
+                    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+                    appId: "YOUR_APP_ID"
+                };
+                firebase.initializeApp(firebaseConfig);
+                console.log('Firebase initialized in app.js');
+            }
+            
+            // Initialize Firestore
             window.db = firebase.firestore();
             console.log('Firestore database initialized successfully');
         } catch (error) {
@@ -21,7 +34,7 @@ document.addEventListener('DOMContentLoaded', function() {
             alert('Error connecting to the database. Some features may not work properly.');
         }
     } else {
-        console.error('Firebase is not defined. Make sure firebase-config.js is loaded before app.js');
+        console.error('Firebase is not defined. Make sure firebase SDK is loaded before app.js');
         alert('Error loading Firebase. Some features may not work properly.');
     }
     
