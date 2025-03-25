@@ -13,16 +13,6 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             // Check if Firebase app is already initialized
             if (!firebase.apps.length) {
-                // If using GitHub Pages and firebase-config.js is not available, initialize with environment variables or defaults
-                const firebaseConfig = {
-                    apiKey: "YOUR_API_KEY",
-                    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-                    projectId: "YOUR_PROJECT_ID",
-                    storageBucket: "YOUR_PROJECT_ID.appspot.com",
-                    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-                    appId: "YOUR_APP_ID"
-                };
-                firebase.initializeApp(firebaseConfig);
                 console.log('Firebase initialized in app.js');
             }
             
