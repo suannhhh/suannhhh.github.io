@@ -8,26 +8,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const path = window.location.pathname;
     const filename = path.substring(path.lastIndexOf('/') + 1);
     
-    // Initialize Firebase if not already initialized
-    if (typeof firebase !== 'undefined') {
-        try {
-            // Check if Firebase app is already initialized
-            if (!firebase.apps.length) {
-                console.log('Firebase initialized in app.js');
-            }
-            
-            // Initialize Firestore
-            window.db = firebase.firestore();
-            console.log('Firestore database initialized successfully');
-        } catch (error) {
-            console.error('Error initializing Firestore:', error);
-            alert('Error connecting to the database. Some features may not work properly.');
-        }
-    } else {
-        console.error('Firebase is not defined. Make sure firebase SDK is loaded before app.js');
-        alert('Error loading Firebase. Some features may not work properly.');
-    }
-    
     if (filename === 'index.html' || filename === '') {
         // Home page initialization
         console.log('Home page loaded');
@@ -538,12 +518,6 @@ async function respondToInvitation(response) {
     }
 }
 
-// Function to show the host panel when the button is clicked
-function showHostPanel() {
-    document.getElementById('hostPanel').classList.remove('hidden');
-    document.getElementById('hostAuthSection').classList.add('hidden');
-}
-
 // Host authentication and management functions
 async function verifyAccessCode() {
     const urlParams = new URLSearchParams(window.location.search);
@@ -756,15 +730,6 @@ async function uploadGuestList() {
 // Modified localStorage functions to use Firebase instead
 async function saveEvent(event) {
     try {
-        // Ensure db is defined
-        if (!db && typeof firebase !== 'undefined') {
-            db = firebase.firestore();
-        }
-        
-        if (!db) {
-            throw new Error('Firebase database is not initialized');
-        }
-        
         // Store the event in Firestore
         await db.collection('events').doc(event.id).set(event);
         console.log('Event saved to Firestore:', event.id);
@@ -785,15 +750,6 @@ async function saveEvent(event) {
 
 async function getEvent(eventId) {
     try {
-        // Ensure db is defined
-        if (!db && typeof firebase !== 'undefined') {
-            db = firebase.firestore();
-        }
-        
-        if (!db) {
-            throw new Error('Firebase database is not initialized');
-        }
-        
         // Get the event from Firestore
         const doc = await db.collection('events').doc(eventId).get();
         
@@ -822,22 +778,9 @@ function backToGuestView() {
     document.getElementById('guestView').classList.remove('hidden');
 }
 
-// At the end of the file, make functions available globally AFTER they're defined
-// Make sure important functions are available globally
-window.generateRandomCode = generateRandomCode;
-window.goToEvent = goToEvent;
-window.addInvitee = addInvitee;
-window.removeInvitee = removeInvitee;
-window.submitEvent = submitEvent;
-window.copyEventLink = copyEventLink;
-window.uploadGuestListCreate = uploadGuestListCreate;
-window.showHostLogin = showHostLogin;
-window.backToGuestView = backToGuestView;
-window.respondToInvitation = respondToInvitation;
-window.showRsvpForm = showRsvpForm;
-window.verifyAccessCode = verifyAccessCode;
-window.toggleDetailedView = toggleDetailedView;
-window.exportGuestList = exportGuestList;
-window.uploadGuestList = uploadGuestList;
+// Function to show the host panel when the button is clicked
+function showHostPanel() {
+    document.getElementById('hostPanel').classList.remove('hidden');
+    document.getElementById('hostAuthSection').classList.add('hidden');
+}
 window.showHostPanel = showHostPanel;
-window.showGuestTab = showGuestTab;
